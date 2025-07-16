@@ -9,7 +9,7 @@ import java.util.List;
 public class BriefDTO {
     private String name;
     private String description;
-    private List<CompetenceDTO> competenceDTOList;
+    private List<CompetenceDTO> competences;
 
 
     public String getName() {
@@ -28,11 +28,11 @@ public class BriefDTO {
         this.description = description;
     }
 
-    public List<CompetenceDTO> getCompetenceDTOList() {
-        return competenceDTOList;
+    public List<CompetenceDTO> getCompetences() {
+        return competences;
     }
 
-    public void setCompetenceDTOList(List<CompetenceDTO> competenceDTOList) {
-        this.competenceDTOList = competenceDTOList;
+    public void setCompetences(List<CompetenceDTO> competences) {
+        this.competences = competences;
     }
 }

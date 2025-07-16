@@ -1,15 +1,13 @@
 package com.brief.briefservice.Controller;
 
 import com.brief.briefservice.DTO.BriefDTO;
-import com.brief.briefservice.DTO.CompetenceDTO;
-import com.brief.briefservice.Model.Brief;
+import com.brief.briefservice.DTO.BriefPostDTO;
 import com.brief.briefservice.Service.BriefService;
-
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 @RestController
+@RequestMapping("/brief")
 public class BriefController {
     private final BriefService service;
 
@@ -17,15 +15,17 @@ public class BriefController {
         this.service = service;
     }
     @PostMapping("/add")
-    public BriefDTO addBrief(@RequestBody BriefDTO dto){
+    public BriefPostDTO addBrief(@RequestBody BriefPostDTO dto){
         return service.addBrief(dto);
     }
+
     @GetMapping("/getAll")
     public List<BriefDTO> getBriefList(){
         return service.getBriefs();
     }
-    @GetMapping("/Competences/{id}")
-    public BriefDTO competenceList(@PathVariable Long id){
+
+    @GetMapping("/{id}")
+    public BriefDTO getBrief(@PathVariable Long id){
         return service.getBriefWithAllCompetences(id);
     }
 }

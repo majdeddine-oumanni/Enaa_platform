@@ -6,8 +6,11 @@ import org.springframework.web.bind.annotation.GetMapping;
 
 import java.util.List;
 
-@FeignClient(name = "Brief-Service", url = "http://localhost:8081")
+@FeignClient(name = "Brief-Service", url = "http://localhost:8081/brief")
 public interface BriefCall {
     @GetMapping("/getAll")
-    public List<BriefDTO> getBriefList();
+    List<BriefDTO> getBriefList();
+
+    @GetMapping("/competences/{id}")
+    BriefDTO getBriefWithCompetences();
 }

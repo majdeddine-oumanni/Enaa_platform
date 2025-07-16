@@ -17,6 +17,7 @@
   <modules>
     <module>Brief-service</module>
     <module>Aprenant-Service</module>
+    <module>Rendu-service</module>
   </modules>
 
   <dependencies>
