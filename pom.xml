@@ -18,6 +18,9 @@
     <module>Brief-service</module>
     <module>Aprenant-Service</module>
     <module>Rendu-service</module>
+    <module>apiGateway-service</module>
+    <module>eureka-service</module>
+    <module>auth-service</module>
   </modules>
 
   <dependencies>
