@@ -1,50 +1,60 @@
 package com.gate.apigatewayservice.Filters;
 
 import io.jsonwebtoken.Claims;
-import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
+import jakarta.servlet.Filter;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
+import jakarta.servlet.ServletRequest;
+import jakarta.servlet.ServletResponse;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import org.springframework.web.filter.OncePerRequestFilter;
-
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 
 @Component
-public class JwtAuthenticationFilter extends OncePerRequestFilter {
+public class JwtAuthenticationFilter implements Filter {
 
-    private final String SECRET_KEY = "xhQ1nuOIoDzF4d5wGt4Z19gy8Z+86aYh9575YtpIM3bDHn/pelJ8B/KMvFuYN7cQ";
+    @Value("${jwt.secret}")
+    private String secretKey;
 
     @Override
-    protected void doFilterInternal(HttpServletRequest request,
-                                    HttpServletResponse response,
-                                    FilterChain filterChain) throws ServletException, IOException {
+    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
+            throws IOException, ServletException {
 
-        String authHeader = request.getHeader("Authorization");
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
+        HttpServletResponse httpResponse = (HttpServletResponse) response;
+
+        String authHeader = httpRequest.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing token");
             return;
         }
 
         String token = authHeader.substring(7);
+
         try {
             Claims claims = Jwts.parser()
-                    .setSigningKey(SECRET_KEY.getBytes(StandardCharsets.UTF_8))
+                    .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8)) // IMPORTANT: use proper encoding
                     .parseClaimsJws(token)
                     .getBody();
 
-            // You can also check roles or expiration here if needed
+            String role = claims.get("role", String.class);
+            String path = httpRequest.getRequestURI();
 
-            filterChain.doFilter(request, response); // token is valid, continue
+            if (path.equals("/brief/add") && !"FORMATEUR".equals(role)) {
+                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Only FORMATEUR can add briefs");
+                return;
+            }
 
-        } catch (JwtException e) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            chain.doFilter(request, response);
+
+        } catch (Exception e) {
+            httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
         }
     }
 }
-

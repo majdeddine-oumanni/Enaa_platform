@@ -16,7 +16,7 @@ public class FilterConfig {
     public FilterRegistrationBean<JwtAuthenticationFilter> filterRegistrationBean() {
         FilterRegistrationBean<JwtAuthenticationFilter> registrationBean = new FilterRegistrationBean<>();
         registrationBean.setFilter(jwtAuthFilter);
-        registrationBean.addUrlPatterns("/student/*", "/brief/*", "/skill/*"); // secured routes
+        registrationBean.addUrlPatterns("/brief/*", "/rendu/*"); // secured routes
         return registrationBean;
     }
 }
