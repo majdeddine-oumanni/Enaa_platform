@@ -13,7 +13,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
 
 @Component
 public class JwtAuthenticationFilter implements Filter {
@@ -26,12 +25,10 @@ public class JwtAuthenticationFilter implements Filter {
             throws IOException, ServletException {
 
         HttpServletRequest httpRequest = (HttpServletRequest) request;
-        HttpServletResponse httpResponse = (HttpServletResponse) response;
-
         String authHeader = httpRequest.getHeader("Authorization");
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing token");
+            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing token");
             return;
         }
 
@@ -39,22 +36,24 @@ public class JwtAuthenticationFilter implements Filter {
 
         try {
             Claims claims = Jwts.parser()
-                    .setSigningKey(secretKey.getBytes(StandardCharsets.UTF_8)) // IMPORTANT: use proper encoding
+                    .setSigningKey(secretKey)
                     .parseClaimsJws(token)
                     .getBody();
 
             String role = claims.get("role", String.class);
             String path = httpRequest.getRequestURI();
 
-            if (path.equals("/brief/add") && !"FORMATEUR".equals(role)) {
-                httpResponse.sendError(HttpServletResponse.SC_FORBIDDEN, "Only FORMATEUR can add briefs");
+            if (path.equals("/brief/add") && !"ROLE_FORMATEUR".equals(role)) {
+                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden: Only FORMATEUR can add briefs");
                 return;
             }
+            System.out.println("jwt role" + role);
+            System.out.println(path.equals("/brief/add"));
 
             chain.doFilter(request, response);
 
         } catch (Exception e) {
-            httpResponse.sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
         }
     }
 }
