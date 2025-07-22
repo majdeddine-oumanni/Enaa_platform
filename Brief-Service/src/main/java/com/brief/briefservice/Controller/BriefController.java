@@ -7,7 +7,6 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 
 @RestController
-@RequestMapping("/brief")
 public class BriefController {
     private final BriefService service;
 
@@ -27,5 +26,10 @@ public class BriefController {
     @GetMapping("/{id}")
     public BriefDTO getBrief(@PathVariable Long id){
         return service.getBriefWithAllCompetences(id);
+    }
+
+    @GetMapping("/test")
+    public String test(){
+        return "working";
     }
 }

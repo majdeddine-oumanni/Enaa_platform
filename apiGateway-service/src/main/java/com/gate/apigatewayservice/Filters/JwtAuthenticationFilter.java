@@ -2,34 +2,38 @@ package com.gate.apigatewayservice.Filters;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
-import jakarta.servlet.Filter;
-import jakarta.servlet.FilterChain;
-import jakarta.servlet.ServletException;
-import jakarta.servlet.ServletRequest;
-import jakarta.servlet.ServletResponse;
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
+import io.jsonwebtoken.JwtException;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.gateway.filter.GatewayFilterChain;
+import org.springframework.cloud.gateway.filter.GlobalFilter;
+import org.springframework.core.Ordered;
+import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Component;
-
-import java.io.IOException;
+import org.springframework.web.server.ServerWebExchange;
+import reactor.core.publisher.Mono;
 
 @Component
-public class JwtAuthenticationFilter implements Filter {
+public class JwtAuthenticationFilter implements GlobalFilter, Ordered {
 
     @Value("${jwt.secret}")
     private String secretKey;
 
     @Override
-    public void doFilter(ServletRequest request, ServletResponse response, FilterChain chain)
-            throws IOException, ServletException {
+    public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
+        String path = exchange.getRequest().getURI().getPath();
 
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
-        String authHeader = httpRequest.getHeader("Authorization");
+        // Allow public access to /auth/** endpoints
+        if (path.startsWith("/auth")) {
+            return chain.filter(exchange);
+        }
+
+        HttpHeaders headers = exchange.getRequest().getHeaders();
+        String authHeader = headers.getFirst(HttpHeaders.AUTHORIZATION);
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Missing token");
-            return;
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
         }
 
         String token = authHeader.substring(7);
@@ -41,19 +45,23 @@ public class JwtAuthenticationFilter implements Filter {
                     .getBody();
 
             String role = claims.get("role", String.class);
-            String path = httpRequest.getRequestURI();
 
             if (path.equals("/brief/add") && !"ROLE_FORMATEUR".equals(role)) {
-                ((HttpServletResponse) response).sendError(HttpServletResponse.SC_FORBIDDEN, "Forbidden: Only FORMATEUR can add briefs");
-                return;
+                exchange.getResponse().setStatusCode(HttpStatus.FORBIDDEN);
+                return exchange.getResponse().setComplete();
             }
-            System.out.println("jwt role" + role);
-            System.out.println(path.equals("/brief/add"));
 
-            chain.doFilter(request, response);
+            System.out.println("jwt role: " + role);
+            return chain.filter(exchange);
 
-        } catch (Exception e) {
-            ((HttpServletResponse) response).sendError(HttpServletResponse.SC_UNAUTHORIZED, "Invalid token");
+        } catch (JwtException e) {
+            exchange.getResponse().setStatusCode(HttpStatus.UNAUTHORIZED);
+            return exchange.getResponse().setComplete();
         }
+    }
+
+    @Override
+    public int getOrder() {
+        return -1; // high priority
     }
 }
