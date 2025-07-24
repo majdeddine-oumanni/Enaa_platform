@@ -9,6 +9,8 @@ import com.rendu.renduservice.Model.Rendu;
 import com.rendu.renduservice.Repository.RenduRepository;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
 import java.util.stream.Collectors;
@@ -46,6 +48,14 @@ public class RenduService {
 
             return dto;
         }).collect(Collectors.toList());
+    }
+    public List<BriefDTO> getBriefIDs(LocalDateTime date1, LocalDateTime date2){
+        List<Long> briefIDs = repository.findBySubmissionDate(date1, date2);
+        List<BriefDTO> briefDTOS = new ArrayList<>();
+        briefIDs.forEach((id)->{
+            briefDTOS.add(briefClient.getBriefById(id));
+        });
+        return briefDTOS;
     }
 
 }
