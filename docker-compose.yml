@@ -64,9 +64,9 @@ services:
       retries: 5
 
   eureka:
-    container_name: eureka_server
+    container_name: eureka-service
     build:
-      context: ./Eureka-Server
+      context: ./eureka-service
     ports:
       - "8761:8761"
     networks:
@@ -78,9 +78,9 @@ services:
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
 
   api-gateway:
-    container_name: api_gateway
+    container_name: apiGateway-service
     build:
-      context: ./Api-Gateway
+      context: ./apiGateway-service
     ports:
       - "8085:8085"
     depends_on:
@@ -105,10 +105,10 @@ services:
       SPRING_CLOUD_GATEWAY_DEFAULT_FILTERS_0: AddResponseHeader=X-Gateway,ENAA API Gateway
       SPRING_MAIN_WEB_APPLICATION_TYPE: reactive
 
-  Brief-Service:
-    container_name: Brief-Service
+  brief-service:
+    container_name: brief-service
     build:
-      context: ./Brief-Service
+      context: ./brief-service
     ports:
       - "8081:8080"
     depends_on:
@@ -124,10 +124,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: admin0000
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
 
-  Aprenant-Service:
-    container_name: Aprenant-Service
+  aprenant-service:
+    container_name: aprenant-service
     build:
-      context: ./Aprenant-Service
+      context: ./aprenant-service
     ports:
       - "8082:8080"
     depends_on:
@@ -162,10 +162,10 @@ services:
       SPRING_DATASOURCE_PASSWORD: admin0000
       EUREKA_CLIENT_SERVICEURL_DEFAULTZONE: http://eureka:8761/eureka
 
-  Rendu-service:
-    container_name: Rendu-service
+  rendu-service:
+    container_name: rendu-service
     build:
-      context: ./Rendu-service
+      context: ./rendu-service
     ports:
       - "8083:8080"
     depends_on:
